@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fortune Cookie</title>
+  <style>
+    body {
+      background-color: #f6f3ea; /* soft warm background */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    #container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+    }
+
+    #whole-cookie {
+      position: absolute;
+      width: 100%;
+      cursor: pointer;
+      transition: opacity 0.5s ease;
+    }
+
+    #left-half, #right-half {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      display: none;
+    }
+
+    #left-half {
+      animation: moveLeft 1s forwards;
+    }
+
+    #right-half {
+      animation: moveRight 1s forwards;
+    }
+
+    @keyframes moveLeft {
+      0% { left: 0; }
+      100% { left: -150px; opacity: 1; }
+    }
+
+    @keyframes moveRight {
+      0% { left: 0; }
+      100% { left: 150px; opacity: 1; }
+    }
+
+    #paper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 260px;
+      height: 120px;
+      background-image: repeating-linear-gradient(
+        white,
+        white 19px,
+        #ddd 20px
+      );
+      border: 1px solid #ccc;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      padding: 10px;
+      font-size: 18px;
+      line-height: 24px;
+      text-align: center;
+      display: none;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <img id="whole-cookie" src="firstframe.png" alt="fortune cookie" />
+    <img id="left-half" src="left.png" alt="left half" />
+    <img id="right-half" src="right.png" alt="right half" />
+    <div id="paper"></div>
+  </div>
+
+  <script>
+    const fortunes = [
+      "You will have a pleasant surprise.",
+      "A new adventure awaits you this week.",
+      "Your hard work will soon pay off.",
+      "Happiness begins with facing life with a smile.",
+      "Good news will come to you by mail.",
+      "Now is the time to try something new.",
+      "You will make a valuable connection.",
+      "A thrilling time is in your near future.",
+      "You are destined for greatness.",
+      "Someone close to you has good intentions."
+      // ... add up to ~300 total fortunes here
+    ];
+
+    const whole = document.getElementById("whole-cookie");
+    const left = document.getElementById("left-half");
+    const right = document.getElementById("right-half");
+    const paper = document.getElementById("paper");
+
+    let opened = false;
+
+    whole.addEventListener("click", () => {
+      if (opened) return;
+
+      opened = true;
+      whole.style.opacity = 0;
+      setTimeout(() => {
+        whole.style.display = "none";
+        left.style.display = "block";
+        right.style.display = "block";
+        paper.style.display = "block";
+
+        const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+        paper.innerText = fortune;
+      }, 500);
+    });
+  </script>
+</body>
+</html>
