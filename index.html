@@ -6,7 +6,9 @@
   <title>Fortune Cookie</title>
   <style>
     body {
-      background-color: #f6f3ea; /* soft warm background */
+      background: linear-gradient(135deg, #f5e6d3 0%, #f9f1e7 25%, #fef9f3 50%, #f9f1e7 75%, #f5e6d3 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -14,6 +16,26 @@
       overflow: hidden;
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 230, 200, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 245, 220, 0.3) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     #container {
@@ -24,34 +46,57 @@
 
     #whole-cookie {
       position: absolute;
-      width: 100%;
+      width: 400px;
+      height: 400px;
+      object-fit: contain;
       cursor: pointer;
       transition: opacity 0.5s ease;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
 
     #left-half, #right-half {
       position: absolute;
-      width: 100%;
-      top: 0;
+      width: 400px;
+      height: 400px;
+      object-fit: contain;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: none;
     }
 
     #left-half {
-      animation: moveLeft 1s forwards;
+      animation: moveLeft 1.5s forwards;
     }
 
     #right-half {
-      animation: moveRight 1s forwards;
+      animation: moveRight 1.5s forwards;
     }
 
     @keyframes moveLeft {
-      0% { left: 0; }
-      100% { left: -150px; opacity: 1; }
+      0% { 
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      100% { 
+        left: 20%;
+        transform: translate(-50%, -50%);
+        opacity: 0.8;
+      }
     }
 
     @keyframes moveRight {
-      0% { left: 0; }
-      100% { left: 150px; opacity: 1; }
+      0% { 
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      100% { 
+        left: 80%;
+        transform: translate(-50%, -50%);
+        opacity: 0.8;
+      }
     }
 
     #paper {
@@ -79,33 +124,89 @@
 </head>
 <body>
   <div id="container">
-    <img id="whole-cookie" src="firstframe.png" alt="fortune cookie" />
-    <img id="left-half" src="left.png" alt="left half" />
-    <img id="right-half" src="right.png" alt="right half" />
+    <img id="whole-cookie" src="" alt="fortune cookie" />
+    <img id="left-half" src="" alt="left half" />
+    <img id="right-half" src="" alt="right half" />
     <div id="paper"></div>
   </div>
 
   <script>
-    const fortunes = [
-      "You will have a pleasant surprise.",
-      "A new adventure awaits you this week.",
-      "Your hard work will soon pay off.",
-      "Happiness begins with facing life with a smile.",
-      "Good news will come to you by mail.",
-      "Now is the time to try something new.",
-      "You will make a valuable connection.",
-      "A thrilling time is in your near future.",
-      "You are destined for greatness.",
-      "Someone close to you has good intentions."
-      // ... add up to ~300 total fortunes here
-    ];
+    // Generate designs array for all 25 designs
+    const designs = [];
+    for (let i = 1; i <= 25; i++) {
+      designs.push({
+        whole: `${i}Full.png`,
+        left: `${i}Left.png`,
+        right: `${i}Right.png`
+      });
+    }
 
+    let fortunes = [];
+    let shuffledFortunes = [];
+    let currentFortuneIndex = 0;
     const whole = document.getElementById("whole-cookie");
     const left = document.getElementById("left-half");
     const right = document.getElementById("right-half");
     const paper = document.getElementById("paper");
-
     let opened = false;
+
+    // Shuffle array function
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // Get next fortune without repeating until all are used
+    function getNextFortune() {
+      if (currentFortuneIndex >= shuffledFortunes.length) {
+        // We've shown all fortunes, reshuffle and start over
+        shuffledFortunes = shuffleArray(fortunes);
+        currentFortuneIndex = 0;
+      }
+      return shuffledFortunes[currentFortuneIndex++];
+    }
+
+    // Select a random design on page load
+    const selectedDesign = designs[Math.floor(Math.random() * designs.length)];
+    whole.src = selectedDesign.whole;
+    left.src = selectedDesign.left;
+    right.src = selectedDesign.right;
+
+    // Load fortunes from text file
+    async function loadFortunes() {
+      try {
+        const response = await fetch('Sayings500.txt');
+        const text = await response.text();
+        // Split by newlines and filter out empty lines
+        fortunes = text.split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0);
+        
+        if (fortunes.length === 0) {
+          // Fallback fortunes if file is empty or fails
+          fortunes = [
+            "You will have a pleasant surprise.",
+            "A new adventure awaits you this week.",
+            "Your hard work will soon pay off."
+          ];
+        }
+      } catch (error) {
+        console.error('Error loading fortunes:', error);
+        // Fallback fortunes
+        fortunes = [
+          "You will have a pleasant surprise.",
+          "A new adventure awaits you this week.",
+          "Your hard work will soon pay off."
+        ];
+      }
+    }
+
+    // Initialize
+    loadFortunes();
 
     whole.addEventListener("click", () => {
       if (opened) return;
